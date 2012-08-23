@@ -1,4 +1,6 @@
 package Server::Control::Nginx;
+use Cwd qw(realpath);
+use File::Spec::Functions qw(catfile);
 use Log::Any qw($log);
 use Moose;
 use strict;
@@ -40,10 +42,14 @@ sub _validate_conf_file {
 
 sub _build_pid_file {
     my $self = shift;
-    $log->debugf( "defaulting pid_file to %s/%s",
-                  $self->log_dir, "nginx.pid" )
-                if $log->is_debug;
-    return catfile( $self->log_dir, "nginx.pid" );
+    my $pid_file;
+    if ($self->log_dir && ( -d $self->log_dir )) {
+        $log->debugf( "defaulting pid_file to %s/%s",
+                      $self->log_dir, "nginx.pid" )
+            if $log->is_debug;
+        $pid_file = catfile( $self->log_dir, "nginx.pid" );
+    }
+    return $pid_file;
 }
 
 sub _build_bind_addr {
